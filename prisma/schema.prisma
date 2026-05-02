@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Alert {
+  id          String       @id @default(cuid())
+  name        String
+  email       String
+  filters     String       // JSON: { brand, model, minPrice, maxPrice, minYear, maxYear, maxKm, fuel, province, sources }
+  isActive    Boolean      @default(true)
+  lastChecked DateTime?
+  createdAt   DateTime     @default(now())
+  seenIds     SeenListing[]
+}
+
+model SeenListing {
+  id        String   @id // external listing id (url hash)
+  alertId   String
+  title     String
+  price     Int
+  url       String
+  source    String
+  seenAt    DateTime @default(now())
+  alert     Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@unique([alertId, id])
+}
